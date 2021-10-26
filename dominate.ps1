@@ -21,7 +21,6 @@ while ($true)
   $WShell.sendKeys("{SCROLLLOCK}")
 
   # notify
-  New-BurntToastNotification -Text "Hydration Alert", "It's time to hydrate. Try to drink at least 8 ounces of water! #HydrateToDominate" -AppLogo C:\hydrate\logo.png
 
   Show-Notification
 
