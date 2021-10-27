@@ -5,7 +5,7 @@ function Reminder {
   [Windows.UI.Notifications.ToastNotification, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
   [Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime] | Out-Null
 
-  $Logo = "$PSScriptRoot\images\logo.png";
+  $Logo = "$PSScriptRoot\images\droplet-logo.png";
   $Title = "Hydration Alert";
   $Message = "It's time to hydrate. Try to drink at least 8oz of water!";
   $Hashtag = "#HydrateToDominate";
