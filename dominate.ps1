@@ -1,19 +1,40 @@
 [void][Reflection.Assembly]::LoadWithPartialName('Microsoft.VisualBasic')
 
-Add-Type -AssemblyName System.Windows.Forms
+function Reminder {
+  [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
+  [Windows.UI.Notifications.ToastNotification, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
+  [Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime] | Out-Null
 
-params($sleep = 1790)
+  $Logo = "$PSScriptRoot\images\logo.png";
+  $Title = "Hydration Alert";
+  $Message = "It's time to hydrate. Try to drink at least 8oz of water!";
+  $Hashtag = "#HydrateToDominate";
+  $APP_ID = "d87ceb61-e553-4319-b4c0-65ae005141eb";
+  $imageTemplate = @"
+  <toast>
+    <visual>
+      <binding template="ToastImageAndText04">
+        <image id="1" src="$($Logo)" alt="Hydration logo"/>
+        <text id="1">$($Title)</text>
+        <text id="2">$($Message)</text>
+        <text id="3">$($Hashtag)</text>
+      </binding>
+    </visual>
+  </toast>
+"@
+
+  $xml = New-Object Windows.Data.Xml.Dom.XmlDocument
+  $xml.LoadXml($imageTemplate)
+  $toast = New-Object Windows.UI.Notifications.ToastNotification $xml
+  [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier($APP_ID).Show($toast)
+}
+
+$sleep = 1790
 $WShell = New-Object -com "Wscript.Shell"
 $ud = 1
-$title = 'Name'
-$msg = "What's your name?"
-
-$name = [Microsoft.VisualBasic.Interaction]::InputBox($msg, $title)
 
 Clear-Host
-Echo "Reminding $name to stay hydrated."
 
-$index = 0
 while ($true)
 {
   $WShell.sendKeys("{SCROLLLOCK}")
@@ -21,9 +42,7 @@ while ($true)
   $WShell.sendKeys("{SCROLLLOCK}")
 
   # notify
-
-  Show-Notification
-
+  Reminder
   # end notify
 
   $p = [System.Windows.Forms.Cursor]::Position
@@ -33,31 +52,4 @@ while ($true)
   $ud *= -1
 
   Start-Sleep -Seconds $sleep
-}
-
-function Show-Notification {
-  [cmdletbinding()]
-
-  $ToastTitle = "Hydration Alert"
-  $ToastText = "It's time to hydrate. Try to drink at least 8 ounces of water! #HydrateToDominate"
-
-  [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] > $null
-  $Template = [Windows.UI.Notifications.ToastNotificationManager]::GetTemplateContent([Windows.UI.Notifications.ToastTemplateType]::ToastImageAndText01)
-
-  $RawXml = [xml] $Template.GetXml()
-  var images = $RawXml.getElementsByTagName("image");
-  images[0].setAttribute("src", "logo.png");
-  ($RawXml.toast.visual.binding.text|where {$_.id -eq "1"}).AppendChild($RawXml.CreateTextNode($ToastTitle)) > $null
-  ($RawXml.toast.visual.binding.text|where {$_.id -eq "2"}).AppendChild($RawXml.CreateTextNode($ToastText)) > $null
-
-  $SerializedXml = New-Object Windows.Data.Xml.Dom.XmlDocument
-  $SerializedXml.LoadXml($RawXml.OuterXml)
-
-  $Toast = [Windows.UI.Notifications.ToastNotification]::new($SerializedXml)
-  $Toast.Tag = "PowerShell"
-  $Toast.Group = "PowerShell"
-  $Toast.ExpirationTime = [DateTimeOffset]::Now.AddMinutes(1)
-
-  $Notifier = [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier("PowerShell")
-  $Notifier.Show($Toast);
 }
